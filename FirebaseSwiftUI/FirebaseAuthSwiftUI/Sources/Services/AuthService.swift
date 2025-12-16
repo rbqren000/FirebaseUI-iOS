@@ -129,7 +129,7 @@ public final class AuthService {
 
   private var currentMFAResolver: MultiFactorResolver?
   private var listenerManager: AuthListenerManager?
-  private var emailSignInCallback: (() -> Void)?
+  private var emailLinkSignInCallback: (() -> Void)?
   private var providers: [AuthProviderUI] = []
 
   public let configuration: AuthConfiguration
@@ -139,7 +139,8 @@ public final class AuthService {
   public var currentUser: User?
   public var authenticationState: AuthenticationState = .unauthenticated
   public var authenticationFlow: AuthenticationFlow = .signIn
-  public var emailSignInEnabled = false
+  public var emailPasswordSignInEnabled = false
+  public var emailLinkSignInEnabled = false
   public private(set) var navigator = Navigator()
 
   public var authView: AuthView? {
@@ -153,13 +154,13 @@ public final class AuthService {
   public func renderButtons(spacing: CGFloat = 16) -> AnyView {
     AnyView(
       VStack(spacing: spacing) {
-        if emailSignInEnabled {
+        if emailLinkSignInEnabled {
           AuthProviderButton(
             label: string.signInWithEmailLinkViewTitle,
             style: .email,
             accessibilityId: "sign-in-with-email-link-button"
           ) {
-            if let callback = self.emailSignInCallback {
+            if let callback = self.emailLinkSignInCallback {
               callback()
             } else {
               self.navigator.push(.emailLink)
@@ -345,17 +346,9 @@ public extension AuthService {
 // MARK: - Email/Password Sign In
 
 public extension AuthService {
-  /// Enable email sign-in with default behavior (navigates to email link view)
+  /// Enable email/password sign-in (EmailAuthView is shown directly in AuthPickerView)
   func withEmailSignIn() -> AuthService {
-    return withEmailSignIn { [weak self] in
-      self?.navigator.push(.emailLink)
-    }
-  }
-
-  /// Enable email sign-in with custom callback
-  func withEmailSignIn(onTap: @escaping () -> Void) -> AuthService {
-    emailSignInEnabled = true
-    emailSignInCallback = onTap
+    emailPasswordSignInEnabled = true
     return self
   }
 
@@ -392,6 +385,20 @@ public extension AuthService {
 // MARK: - Email Link Sign In
 
 public extension AuthService {
+  /// Enable email link sign-in with default behavior (navigates to email link view)
+  func withEmailLinkSignIn() -> AuthService {
+    return withEmailLinkSignIn { [weak self] in
+      self?.navigator.push(.emailLink)
+    }
+  }
+
+  /// Enable email link sign-in with custom callback
+  func withEmailLinkSignIn(onTap: @escaping () -> Void) -> AuthService {
+    emailLinkSignInEnabled = true
+    emailLinkSignInCallback = onTap
+    return self
+  }
+
   /// Send email link for sign-in or reauthentication
   /// - Parameters:
   ///   - email: Email address to send link to

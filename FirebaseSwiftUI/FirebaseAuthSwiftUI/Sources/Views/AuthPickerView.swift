@@ -140,7 +140,7 @@ extension AuthPickerView: View {
             .resizable()
             .aspectRatio(contentMode: .fit)
             .frame(width: 100, height: 100)
-          if authService.emailSignInEnabled {
+          if authService.emailPasswordSignInEnabled {
             EmailAuthView()
           }
           Divider()
