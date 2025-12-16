@@ -29,18 +29,99 @@ final class FirebaseSwiftUIExampleUITests: XCTestCase {
   override func tearDownWithError() throws {}
 
   @MainActor
-  func testExample() throws {
+  func testNoProvidersInitialized() throws {
     let app = XCUIApplication()
+    app.launchArguments.append("--test-view-enabled")
+    app.launchArguments.append("--no-providers")
     app.launch()
+
+    // Verify email/password fields are NOT visible when no providers are initialized
+    let emailField = app.textFields["email-field"]
+    XCTAssertFalse(
+      emailField.waitForExistence(timeout: 2),
+      "Email field should NOT be visible when no providers are initialized"
+    )
+
+    // Verify email link button is NOT visible
+    let emailLinkButton = app.buttons["sign-in-with-email-link-button"]
+    XCTAssertFalse(
+      emailLinkButton.waitForExistence(timeout: 2),
+      "Email link button should NOT be visible when no providers are initialized"
+    )
+
+    // Verify provider buttons are NOT visible
+    let googleButton = app.buttons["sign-in-with-google-button"]
+    XCTAssertFalse(
+      googleButton.waitForExistence(timeout: 2),
+      "Google button should NOT be visible when no providers are initialized"
+    )
+
+    let facebookButton = app.buttons["sign-in-with-facebook-button"]
+    XCTAssertFalse(
+      facebookButton.waitForExistence(timeout: 2),
+      "Facebook button should NOT be visible when no providers are initialized"
+    )
   }
 
   @MainActor
-  func testLaunchPerformance() throws {
-    if #available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 7.0, *) {
-      measure(metrics: [XCTApplicationLaunchMetric()]) {
-        XCUIApplication().launch()
-      }
+  func testAllProvidersInitialized() throws {
+    let app = XCUIApplication()
+    app.launchArguments.append("--test-view-enabled")
+    // No --no-providers flag means all providers are enabled by default
+    app.launch()
+
+    // Verify email/password fields are visible when withEmailSignIn() is enabled
+    let emailField = app.textFields["email-field"]
+    XCTAssertTrue(
+      emailField.waitForExistence(timeout: 5),
+      "Email field should be visible when withEmailSignIn() is enabled"
+    )
+
+    let passwordField = app.secureTextFields["password-field"]
+    XCTAssertTrue(
+      passwordField.waitForExistence(timeout: 5),
+      "Password field should be visible when withEmailSignIn() is enabled"
+    )
+
+    let signInButton = app.buttons["sign-in-button"]
+    XCTAssertTrue(
+      signInButton.waitForExistence(timeout: 5),
+      "Sign-in button should be visible when withEmailSignIn() is enabled"
+    )
+
+    // Verify email link button is visible when withEmailLinkSignIn() is enabled
+    let emailLinkButton = app.buttons["sign-in-with-email-link-button"]
+    XCTAssertTrue(
+      emailLinkButton.waitForExistence(timeout: 5),
+      "Email link button should be visible when withEmailLinkSignIn() is enabled"
+    )
+
+    // Tap the email link button and verify it navigates to email link view
+    emailLinkButton.tap()
+    let emailLinkText = app.staticTexts["Send a sign-in link to your email"].firstMatch
+    XCTAssertTrue(
+      emailLinkText.waitForExistence(timeout: 5),
+      "Email link view should appear after tapping email link button"
+    )
+
+    // Go back to verify provider buttons
+    let backButton = app.navigationBars.buttons.element(boundBy: 0)
+    if backButton.exists {
+      backButton.tap()
     }
+
+    // Verify provider buttons are visible
+    let googleButton = app.buttons["sign-in-with-google-button"]
+    XCTAssertTrue(
+      googleButton.waitForExistence(timeout: 5),
+      "Google sign-in button should be visible when withGoogleSignIn() is enabled"
+    )
+
+    let facebookButton = app.buttons["sign-in-with-facebook-button"]
+    XCTAssertTrue(
+      facebookButton.waitForExistence(timeout: 5),
+      "Facebook sign-in button should be visible when withFacebookSignIn() is enabled"
+    )
   }
 
   @MainActor

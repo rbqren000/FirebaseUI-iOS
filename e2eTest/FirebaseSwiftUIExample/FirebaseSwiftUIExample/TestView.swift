@@ -56,18 +56,26 @@ struct TestView: View {
       mfaEnabled: isMfaEnabled
     )
 
-    authService = AuthService(
-      configuration: configuration
-    )
-    .withGoogleSignIn()
-    .withPhoneSignIn()
-    .withAppleSignIn()
-    .withTwitterSignIn()
-    .withOAuthSignIn(OAuthProviderSwift.github())
-    .withOAuthSignIn(OAuthProviderSwift.microsoft())
-    .withOAuthSignIn(OAuthProviderSwift.yahoo())
-    .withFacebookSignIn()
-    .withEmailSignIn()
+    let args = ProcessInfo.processInfo.arguments
+    
+    // Configure providers based on launch arguments
+    if args.contains("--no-providers") {
+      // No providers enabled - just base AuthService
+      authService = AuthService(configuration: configuration)
+    } else {
+      // Enable all providers
+      authService = AuthService(configuration: configuration)
+        .withGoogleSignIn()
+        .withPhoneSignIn()
+        .withAppleSignIn()
+        .withTwitterSignIn()
+        .withOAuthSignIn(OAuthProviderSwift.github())
+        .withOAuthSignIn(OAuthProviderSwift.microsoft())
+        .withOAuthSignIn(OAuthProviderSwift.yahoo())
+        .withFacebookSignIn()
+        .withEmailSignIn()
+        .withEmailLinkSignIn()
+    }
     authService.isPresented = true
   }
 
