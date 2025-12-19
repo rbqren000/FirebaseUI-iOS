@@ -12,15 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-@testable import FirebaseAuthSwiftUI
-import Testing
-import Foundation
 import FirebaseAuth
+@testable import FirebaseAuthSwiftUI
+import Foundation
+import Testing
 
 @Test func testStringUtilsDefaultBundle() async throws {
   // Test that StringUtils works with default bundle (no fallback)
   let stringUtils = StringUtils(bundle: Bundle.module)
-  
+
   let result = stringUtils.authPickerTitle
   #expect(result == "Sign in with Firebase")
 }
@@ -29,7 +29,7 @@ import FirebaseAuth
   // Test that StringUtils automatically falls back to module bundle for missing strings
   // When using main bundle (which doesn't have the strings), it should fall back to module bundle
   let stringUtils = StringUtils(bundle: Bundle.main)
-  
+
   let result = stringUtils.authPickerTitle
   // Should automatically fall back to module bundle since main bundle doesn't have this string
   #expect(result == "Sign in with Firebase")
@@ -37,35 +37,35 @@ import FirebaseAuth
 
 @Test func testStringUtilsEmailInputLabel() async throws {
   let stringUtils = StringUtils(bundle: Bundle.module)
-  
+
   let result = stringUtils.emailInputLabel
   #expect(result == "Enter your email")
 }
 
 @Test func testStringUtilsPasswordInputLabel() async throws {
   let stringUtils = StringUtils(bundle: Bundle.module)
-  
+
   let result = stringUtils.passwordInputLabel
   #expect(result == "Enter your password")
 }
 
 @Test func testStringUtilsGoogleLoginButton() async throws {
   let stringUtils = StringUtils(bundle: Bundle.module)
-  
+
   let result = stringUtils.googleLoginButtonLabel
   #expect(result == "Sign in with Google")
 }
 
 @Test func testStringUtilsAppleLoginButton() async throws {
   let stringUtils = StringUtils(bundle: Bundle.module)
-  
+
   let result = stringUtils.appleLoginButtonLabel
   #expect(result == "Sign in with Apple")
 }
 
 @Test func testStringUtilsErrorMessages() async throws {
   let stringUtils = StringUtils(bundle: Bundle.module)
-  
+
   // Test various error message strings
   #expect(!stringUtils.alertErrorTitle.isEmpty)
   #expect(!stringUtils.passwordRecoveryTitle.isEmpty)
@@ -74,7 +74,7 @@ import FirebaseAuth
 
 @Test func testStringUtilsMFAStrings() async throws {
   let stringUtils = StringUtils(bundle: Bundle.module)
-  
+
   // Test MFA-related strings
   #expect(!stringUtils.twoFactorAuthenticationLabel.isEmpty)
   #expect(!stringUtils.enterVerificationCodeLabel.isEmpty)
@@ -86,16 +86,17 @@ import FirebaseAuth
 @Test func testStringUtilsWithCustomStringsFileOverride() async throws {
   // Test that .strings file overrides work with automatic fallback
   guard let testBundle = createTestBundleWithStringsFile() else {
-    Issue.record("Test bundle with .strings file not available - check TestResources/StringsOverride")
+    Issue
+      .record("Test bundle with .strings file not available - check TestResources/StringsOverride")
     return
   }
-  
+
   let stringUtils = StringUtils(bundle: testBundle)
-  
+
   // Test overridden strings (should come from custom bundle)
   #expect(stringUtils.authPickerTitle == "Custom Sign In Title")
   #expect(stringUtils.emailInputLabel == "Custom Email")
-  
+
   // Test non-overridden strings (should fall back to default)
   #expect(stringUtils.passwordInputLabel == "Enter your password")
   #expect(stringUtils.googleLoginButtonLabel == "Sign in with Google")
@@ -108,16 +109,16 @@ import FirebaseAuth
     Issue.record("Test bundle with .strings file not available")
     return
   }
-  
+
   let stringUtils = StringUtils(bundle: testBundle)
-  
+
   // Create a mock auth error
   let error = NSError(
     domain: "FIRAuthErrorDomain",
     code: AuthErrorCode.invalidEmail.rawValue,
     userInfo: nil
   )
-  
+
   let errorMessage = stringUtils.localizedErrorMessage(for: error)
   // Should fall back to default error message since we didn't override it
   #expect(errorMessage == "That email address isn't correct.")
@@ -129,17 +130,18 @@ import FirebaseAuth
     Issue.record("Test bundle with multi-language strings not available")
     return
   }
-  
+
   // Test with Spanish language code
   let stringUtilsES = StringUtils(bundle: testBundle, languageCode: "es")
-  
+
   // Overridden Spanish string
   #expect(stringUtilsES.authPickerTitle == "Título Personalizado")
-  
+
   // Non-overridden should fall back to default (from module bundle)
   // The fallback should return the default English string since Spanish isn't in module bundle
   #expect(!stringUtilsES.passwordInputLabel.isEmpty)
-  #expect(stringUtilsES.emailInputLabel != "Enter your email" || stringUtilsES.emailInputLabel == "Enter your email")
+  #expect(stringUtilsES.emailInputLabel != "Enter your email" || stringUtilsES
+    .emailInputLabel == "Enter your email")
 }
 
 @Test func testStringUtilsMixedOverrideScenario() async throws {
@@ -148,15 +150,15 @@ import FirebaseAuth
     Issue.record("Test bundle with .strings file not available")
     return
   }
-  
+
   let stringUtils = StringUtils(bundle: testBundle)
-  
+
   // Verify custom strings are overridden
   let customStrings = [
     stringUtils.authPickerTitle,
-    stringUtils.emailInputLabel
+    stringUtils.emailInputLabel,
   ]
-  
+
   // Verify these use default fallback strings
   let defaultStrings = [
     stringUtils.passwordInputLabel,
@@ -165,18 +167,18 @@ import FirebaseAuth
     stringUtils.facebookLoginButtonLabel,
     stringUtils.phoneLoginButtonLabel,
     stringUtils.signOutButtonLabel,
-    stringUtils.deleteAccountButtonLabel
+    stringUtils.deleteAccountButtonLabel,
   ]
-  
+
   // All strings should be non-empty
-  customStrings.forEach { str in
+  for str in customStrings {
     #expect(!str.isEmpty, "Custom string should not be empty")
   }
-  
-  defaultStrings.forEach { str in
+
+  for str in defaultStrings {
     #expect(!str.isEmpty, "Default fallback string should not be empty")
   }
-  
+
   // Verify specific fallback values
   #expect(stringUtils.passwordInputLabel == "Enter your password")
   #expect(stringUtils.googleLoginButtonLabel == "Sign in with Google")
@@ -185,7 +187,7 @@ import FirebaseAuth
 @Test func testStringUtilsAllDefaultStringsAreFallbackable() async throws {
   // Test that all strings can be accessed even with empty custom bundle
   let stringUtils = StringUtils(bundle: Bundle.main)
-  
+
   // Test a comprehensive list of strings to ensure they all fall back correctly
   let allStrings = [
     stringUtils.authPickerTitle,
@@ -207,13 +209,16 @@ import FirebaseAuth
     stringUtils.signUpWithEmailButtonLabel,
     stringUtils.backButtonLabel,
     stringUtils.okButtonLabel,
-    stringUtils.cancelButtonLabel
+    stringUtils.cancelButtonLabel,
   ]
-  
+
   // All should have values from the fallback bundle
-  allStrings.forEach { str in
+  for str in allStrings {
     #expect(!str.isEmpty, "All strings should have fallback values")
-    #expect(str != "Sign in with Firebase" || str == "Sign in with Firebase", "Strings should be valid")
+    #expect(
+      str != "Sign in with Firebase" || str == "Sign in with Firebase",
+      "Strings should be valid"
+    )
   }
 }
 
@@ -225,14 +230,14 @@ private func createTestBundleWithStringsFile() -> Bundle? {
   guard let resourceURL = Bundle.module.resourceURL else {
     return nil
   }
-  
+
   let stringsOverridePath = resourceURL
     .appendingPathComponent("StringsOverride")
-  
+
   guard FileManager.default.fileExists(atPath: stringsOverridePath.path) else {
     return nil
   }
-  
+
   return Bundle(url: stringsOverridePath)
 }
 
@@ -242,14 +247,13 @@ private func createTestBundleWithMultiLanguageStrings() -> Bundle? {
   guard let resourceURL = Bundle.module.resourceURL else {
     return nil
   }
-  
+
   let multiLanguagePath = resourceURL
     .appendingPathComponent("MultiLanguage")
-  
+
   guard FileManager.default.fileExists(atPath: multiLanguagePath.path) else {
     return nil
   }
-  
+
   return Bundle(url: multiLanguagePath)
 }
-
